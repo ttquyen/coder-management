@@ -31,7 +31,6 @@ userController.getAllUsers = async (req, res, next) => {
     page = parseInt(page) || 1;
 
     const filterKeys = Object.keys(filterQuery);
-    console.log(filterKeys);
 
     try {
         if (filterKeys.length) {
@@ -61,50 +60,9 @@ userController.getAllUsers = async (req, res, next) => {
         next(err);
     }
 };
-//Get user by Id
-// userController.getUserById = async (req, res, next) => {
-//     const { id } = req.params;
-
-//     try {
-//         // validate inputs
-
-//         if (!ObjectId.isValid(id)) {
-//             throw new AppError(400, "Bad request", "Invalid user id");
-//         }
-
-//         const userId = await User.findById(id);
-
-//         if (!userId) {
-//             throw new AppError(400, "Bad request", " Not Found Employee");
-//         }
-//         console.log(userId);
-//         const getTask = await Task.find({ owner: id });
-//         if (!getTask && getTask.length === 0) {
-//             return sendResponse(
-//                 res,
-//                 200,
-//                 true,
-//                 userId,
-//                 null,
-//                 " Get list tasks success"
-//             );
-//         }
-//         return sendResponse(
-//             res,
-//             200,
-//             true,
-//             { ...userId._doc, task: getTask },
-//             null,
-//             " Get list tasks success"
-//         );
-//     } catch (err) {
-//         next(err);
-//     }
-// };
 
 userController.getUserById = async (req, res, next) => {
     const { id } = req.params;
-    console.log(id);
     try {
         //validate input
         if (!isValidObjectId(id)) {
@@ -115,14 +73,14 @@ userController.getUserById = async (req, res, next) => {
             throw new AppError(400, "Bad Request", "Employee Not Found");
         }
         const tasks = await Task.find({ owner: id });
-        console.log(tasks);
+
         return sendResponse(
             res,
             200,
             true,
-            tasks,
+            { ...user._doc, tasks: tasks },
             null,
-            "Get task list success"
+            "Get User Success"
         );
     } catch (err) {
         next(err);

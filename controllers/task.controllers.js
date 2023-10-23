@@ -32,7 +32,6 @@ taskController.getTasks = async (req, res, next) => {
     page = parseInt(page) || 1;
 
     const filterKeys = Object.keys(filterQuery);
-    console.log(filterKeys);
     try {
         if (filterKeys.length) {
             filterKeys.map((key) => {
@@ -85,7 +84,6 @@ taskController.getTasks = async (req, res, next) => {
             filter = { ...filter, ...searchRegex };
         }
         //mongoose query
-        console.log(filter);
         tasks = await Task.find(filter)
             .populate("owner")
             .sort({ createAt: -1, updatedAt: -1 })
@@ -105,6 +103,165 @@ taskController.getTasks = async (req, res, next) => {
         next(err);
     }
 };
+// Get task by id
+taskController.getTaskById = async (req, res, next) => {
+    const { id } = req.params;
 
+    if (!id) throw new AppError(402, "Bad request", "Cannot find task");
+    try {
+        if (!isValidObjectId(id))
+            throw new AppError(400, "Bad request", "Invalid Task Id");
+        // Find task by id
+        const found = await Task.findById(id);
+        if (!found) {
+            throw new AppError(400, "Bad request", " Not Found Task");
+        }
+
+        return sendResponse(
+            res,
+            200,
+            true,
+            found,
+            null,
+            "Get task successfully"
+        );
+    } catch (error) {
+        next(error);
+    }
+};
+
+taskController.getTaskByUserId = async (req, res, next) => {
+    const { id: userId } = req.params;
+    if (!userId) throw new AppError(402, "Bad request", "Cannot find User Id");
+    try {
+        if (!isValidObjectId(userId))
+            throw new AppError(400, "Bad request", "Invalid User Id");
+        // Find task by id
+        const found = await Task.find({ owner: userId });
+        return sendResponse(
+            res,
+            200,
+            true,
+            found,
+            null,
+            found ? "Get task successfully" : "No task found"
+        );
+    } catch (error) {
+        next(error);
+    }
+};
+
+//Update task
+taskController.updateTask = async (req, res, next) => {
+    const { id } = req.params;
+    if (!id) throw new AppError(402, "Bad request", "Cannot access task");
+    let { status, owner } = req.body;
+    const allowUpdate = ["pending", "working", "review", "done", "archive"];
+    try {
+        //check invalid mongo object id
+        if (!isValidObjectId(id))
+            throw new AppError(400, "Bad request", "Invalid Task Id");
+        if (owner && !isValidObjectId(owner))
+            throw new AppError(400, "Bad request", "Invalid Owner Id");
+
+        //missing body
+        if (!status && !owner)
+            throw new AppError(400, "Bad request", "Missing status and owner");
+
+        //check allowance status
+        const currentStatus = allowUpdate.find((e) => e === status);
+        if (status && !currentStatus) {
+            throw new AppError(403, "Status is not allow", "Bad request");
+        }
+
+        let task = await Task.findById(id);
+        if (!task) {
+            throw new AppError(400, "Bad Request", "Task Not Found");
+        }
+        if (owner) {
+            let user = await User.findById(owner);
+            if (!user) {
+                throw new AppError(400, "Bad Request", "Owner Not Found");
+            }
+        }
+
+        //Update Task Status
+        //status is set done, it can’t be changed to other value except archive
+        if (status && task.status === "done" && currentStatus !== "archive") {
+            throw new AppError(
+                400,
+                "Bad request",
+                "Done task can be changed to archive status only"
+            );
+        }
+        let updated;
+        if (owner && !status) {
+            if (task.owner[0]?._id.toString() === owner) {
+                //this task is assigned to this employee => unassign
+                owner = [];
+            }
+            updated = await Task.findByIdAndUpdate(
+                id,
+                { owner },
+                { new: true }
+            );
+        } else if (status && !owner) {
+            updated = await Task.findByIdAndUpdate(
+                id,
+                { status },
+                { new: true }
+            );
+        } else {
+            if (task.owner[0]?._id.toString() === owner) {
+                //this task is assigned to this employee => unassign
+                owner = [];
+            }
+            updated = await Task.findByIdAndUpdate(
+                id,
+                { status, owner },
+                { new: true }
+            );
+        }
+
+        return sendResponse(
+            res,
+            200,
+            true,
+            updated,
+            null,
+            "Update task successfully"
+        );
+    } catch (err) {
+        next(err);
+    }
+};
+
+// Delete tasks
+taskController.deleteTask = async (req, res, next) => {
+    const { id } = req.params;
+    try {
+        if (!isValidObjectId(id))
+            throw new AppError(400, "Bad request", "Invalid Task Id");
+        const deleteTask = await Task.findByIdAndUpdate(
+            id,
+            { isDeleted: true },
+            { new: true }
+        );
+
+        if (!deleteTask) {
+            throw new AppError(400, "Bad request", "Task is not found");
+        }
+        sendResponse(
+            res,
+            200,
+            true,
+            deleteTask,
+            null,
+            "Delete task successfully"
+        );
+    } catch (error) {
+        next(error);
+    }
+};
 //export
 module.exports = taskController;

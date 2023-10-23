@@ -13,20 +13,21 @@ const {
  * @access public
  */
 router.get("/", getAllUsers);
+
+/**
+ * @route GET api/user
+ * @description get a user by id
+ * @access private manager
+ */
+router.get("/:id", getUserById);
+
 //Create
 /**
  * @route POST api/user
  * @description create a user
- * @access public
+ * @access private manager
  */
 router.post("/", createUser);
-//Update
-/**
- * @route GET api/user
- * @description get a user by id
- * @access public
- */
-router.get("/:id", getUserById);
 
 //export
 module.exports = router;
