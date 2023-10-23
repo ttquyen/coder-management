@@ -13,7 +13,7 @@ const taskSchema = new mongoose.Schema(
         owner: { type: [mongoose.SchemaTypes.ObjectId], ref: "User" },
         isDeleted: { type: Boolean, default: false, required: true },
     },
-    { timetamps: true }
+    { timestamps: true }
 );
 //Create and export model
 const Task = mongoose.model("Task", taskSchema);
