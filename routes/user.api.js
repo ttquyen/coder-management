@@ -3,8 +3,7 @@ const router = express.Router();
 const {
     createUser,
     getAllUsers,
-    updateUserById,
-    deleteUserById,
+    getUserById,
 } = require("../controllers/user.controllers.js");
 
 //Read
@@ -23,18 +22,11 @@ router.get("/", getAllUsers);
 router.post("/", createUser);
 //Update
 /**
- * @route PUT api/user
- * @description update a user
+ * @route GET api/user
+ * @description get a user by id
  * @access public
  */
-router.put("/:id", updateUserById);
-//Delete
-/**
- * @route DELETE api/user
- * @description delet a user
- * @access public
- */
-router.delete("/:id", deleteUserById);
+router.get("/:id", getUserById);
 
 //export
 module.exports = router;

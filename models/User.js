@@ -1,13 +1,18 @@
 const mongoose = require("mongoose");
 //Create schema
-const userSchema = mongoose.Schema(
+const userSchema = new mongoose.Schema(
     {
         name: { type: String, required: true },
-        flag: { type: Boolean, enum: [true, false], require: true },
+        role: {
+            type: String,
+            default: "employee",
+            enum: ["manager", "employee"],
+            required: true,
+        },
+
+        isDeleted: { type: Boolean, default: false, required: true },
     },
-    {
-        timestamps: true,
-    }
+    { timetamps: true }
 );
 //Create and export model
 const User = mongoose.model("User", userSchema);
