@@ -121,8 +121,8 @@ taskController.getTaskById = async (req, res, next) => {
         if (!isValidObjectId(id))
             throw new AppError(400, "Bad request", "Invalid Task Id");
         // Find task by id
-        const found = await Task.findById(id);
-        if (!found) {
+        const found = await Task.find({ _id: id, isDeleted: false });
+        if (!found || found.length === 0) {
             throw new AppError(400, "Bad request", " Not Found Task");
         }
 
@@ -147,7 +147,7 @@ taskController.getTaskByUserId = async (req, res, next) => {
         if (!isValidObjectId(userId))
             throw new AppError(400, "Bad request", "Invalid User Id");
         // Find task by id
-        const found = await Task.find({ owner: userId });
+        const found = await Task.find({ owner: userId, isDeleted: false });
         return sendResponse(
             res,
             200,
@@ -183,11 +183,12 @@ taskController.updateTask = async (req, res, next) => {
         if (status && !currentStatus) {
             throw new AppError(403, "Status is not allow", "Bad request");
         }
+        let taskArr = await Task.find({ _id: id, isDeleted: false });
 
-        let task = await Task.findById(id);
-        if (!task) {
+        if (!taskArr || taskArr.length === 0) {
             throw new AppError(400, "Bad Request", "Task Not Found");
         }
+        let task = taskArr[0];
         if (owner) {
             let user = await User.findById(owner);
             if (!user) {
@@ -206,28 +207,34 @@ taskController.updateTask = async (req, res, next) => {
         }
         let updated;
         if (owner && !status) {
-            if (task.owner[0]?._id.toString() === owner) {
+            if (
+                task.owner.length === 1 &&
+                task.owner[0]?._id.toString() === owner
+            ) {
                 //this task is assigned to this employee => unassign
                 owner = [];
             }
-            updated = await Task.findByIdAndUpdate(
-                id,
+            updated = await Task.findOneAndUpdate(
+                { _id: id },
                 { owner },
                 { new: true }
             );
         } else if (status && !owner) {
-            updated = await Task.findByIdAndUpdate(
-                id,
+            updated = await Task.findOneAndUpdate(
+                { _id: id },
                 { status },
                 { new: true }
             );
         } else {
-            if (task.owner[0]?._id.toString() === owner) {
+            if (
+                task.owner.length === 1 &&
+                task.owner[0]?._id.toString() === owner
+            ) {
                 //this task is assigned to this employee => unassign
                 owner = [];
             }
-            updated = await Task.findByIdAndUpdate(
-                id,
+            updated = await Task.findOneAndUpdate(
+                { _id: id },
                 { status, owner },
                 { new: true }
             );
@@ -252,8 +259,8 @@ taskController.deleteTask = async (req, res, next) => {
     try {
         if (!isValidObjectId(id))
             throw new AppError(400, "Bad request", "Invalid Task Id");
-        const deleteTask = await Task.findByIdAndUpdate(
-            id,
+        const deleteTask = await Task.findOneAndUpdate(
+            { _id: id },
             { isDeleted: true },
             { new: true }
         );
