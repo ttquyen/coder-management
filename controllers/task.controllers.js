@@ -116,8 +116,8 @@ taskController.getTasks = async (req, res, next) => {
 taskController.getTaskById = async (req, res, next) => {
     const { id } = req.params;
 
-    if (!id) throw new AppError(402, "Bad request", "Cannot find task");
     try {
+        if (!id) throw new AppError(402, "Bad request", "Cannot find task");
         if (!isValidObjectId(id))
             throw new AppError(400, "Bad request", "Invalid Task Id");
         // Find task by id
@@ -141,8 +141,9 @@ taskController.getTaskById = async (req, res, next) => {
 
 taskController.getTaskByUserId = async (req, res, next) => {
     const { id: userId } = req.params;
-    if (!userId) throw new AppError(402, "Bad request", "Cannot find User Id");
     try {
+        if (!userId)
+            throw new AppError(402, "Bad request", "Cannot find User Id");
         if (!isValidObjectId(userId))
             throw new AppError(400, "Bad request", "Invalid User Id");
         // Find task by id
@@ -163,10 +164,10 @@ taskController.getTaskByUserId = async (req, res, next) => {
 //Update task
 taskController.updateTask = async (req, res, next) => {
     const { id } = req.params;
-    if (!id) throw new AppError(402, "Bad request", "Cannot access task");
     let { status, owner } = req.body;
     const allowUpdate = ["pending", "working", "review", "done", "archive"];
     try {
+        if (!id) throw new AppError(402, "Bad request", "Cannot access task");
         //check invalid mongo object id
         if (!isValidObjectId(id))
             throw new AppError(400, "Bad request", "Invalid Task Id");
