@@ -26,7 +26,16 @@ taskController.createTask = async (req, res, next) => {
 taskController.getTasks = async (req, res, next) => {
     //filter by Title, Status
     //Sort by CreatedAt, updatedAt
-    let { limit, page, search, status, owner, ...filterQuery } = req.query;
+    let {
+        limit,
+        page,
+        search,
+        status,
+        owner,
+        createdAt,
+        updatedAt,
+        ...filterQuery
+    } = req.query;
 
     limit = parseInt(limit) || 10;
     page = parseInt(page) || 1;
@@ -86,7 +95,7 @@ taskController.getTasks = async (req, res, next) => {
         //mongoose query
         tasks = await Task.find(filter)
             .populate("owner")
-            .sort({ createAt: -1, updatedAt: -1 })
+            .sort({ createdAt, updatedAt })
             .skip((page - 1) * limit)
             .limit(limit);
         const total = await Task.find({ isDeleted: false }).count();
