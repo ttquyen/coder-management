@@ -215,13 +215,13 @@ taskController.updateTask = async (req, res, next) => {
                 owner = [];
             }
             updated = await Task.findOneAndUpdate(
-                { _id: id },
+                { _id: id, isDeleted: false },
                 { owner },
                 { new: true }
             );
         } else if (status && !owner) {
             updated = await Task.findOneAndUpdate(
-                { _id: id },
+                { _id: id, isDeleted: false },
                 { status },
                 { new: true }
             );
@@ -234,7 +234,7 @@ taskController.updateTask = async (req, res, next) => {
                 owner = [];
             }
             updated = await Task.findOneAndUpdate(
-                { _id: id },
+                { _id: id, isDeleted: false },
                 { status, owner },
                 { new: true }
             );
@@ -260,7 +260,7 @@ taskController.deleteTask = async (req, res, next) => {
         if (!isValidObjectId(id))
             throw new AppError(400, "Bad request", "Invalid Task Id");
         const deleteTask = await Task.findOneAndUpdate(
-            { _id: id },
+            { _id: id, isDeleted: false },
             { isDeleted: true },
             { new: true }
         );
