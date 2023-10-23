@@ -72,7 +72,7 @@ userController.getUserById = async (req, res, next) => {
         if (!user) {
             throw new AppError(400, "Bad Request", "Employee Not Found");
         }
-        const tasks = await Task.find({ owner: id });
+        const tasks = await Task.find({ owner: id, isDeleted: false });
 
         return sendResponse(
             res,
